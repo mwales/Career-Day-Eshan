@@ -1,16 +1,60 @@
 import pandas
 import csv
 
-students_file = pandas.read_csv("students.csv")
-sessions_file = pandas.read_csv("sessions.csv")
-max_students = 20
-min_students = 5
+def rewriteFileSkippingLines(origFile: str, newFile: str, numSkip: int):
+	orig = open(origFile, "r")
+	origData = orig.read().strip()
+	orig.close()
+
+	nf = open(newFile, "w")
+	origLines = origData.split("\n")
+	copyLines = origLines[numSkip:]
+
+	# Pandas wants consistent number of cols
+	colCount = 0
+	for singleLine in copyLines:
+		curCols = singleLine.count(',')
+		if (curCols > colCount):
+			colCount = curCols
+	
+	print(f"We normalizing to {colCount} columns in {newFile}")
+
+	# Rewrite the file
+	for singleLine in copyLines:
+		curCols = singleLine.count(",")
+		nf.write(singleLine)
+
+		colsToAddThisLine = colCount - curCols
+		if (colsToAddThisLine > 0):
+			nf.write(", " * colsToAddThisLine)
+		nf.write("\n")
+
+	nf.close()
+
+	# return the skipped lines
+	return origLines[:numSkip]
+
+rewriteFileSkippingLines("students.csv", "students_panda.csv", 1)
+skippedLines = rewriteFileSkippingLines("sessions.csv", "sessions_panda.csv", 3)
+
+min_students = int(skippedLines[1].split(",")[1])
+max_students = int(skippedLines[2].split(",")[1])
+
+students_file = pandas.read_csv("students_panda.csv")
+sessions_file = pandas.read_csv("sessions_panda.csv")
+#max_students = 20
+#min_students = 5
+
+print(f"Min students = {min_students} and max students = {max_students}")
+
 
 students = {}
 timestamp_delta = max(list(students_file["TIMESTAMP"])) - min(list(students_file["TIMESTAMP"]))
 min_time = min(list(students_file["TIMESTAMP"]))
 
 for a in range(len(students_file)):
+    first_name = students_file[" FIRST_NAME"][a].strip()
+    print(f"Parsing {first_name}")
     students[students_file[" ID"][a]] = {
         "FIRST_NAME": students_file[" FIRST_NAME"][a].strip(),
         "LAST_NAME": students_file[" LAST_NAME"][a].strip(),
@@ -96,6 +140,7 @@ for e in range(len(sorted_students)):
                         sorted_students[student]["LAST_NAME"], 
                         sorted_students[student]["HOMEROOM"], 
                         sorted_students[student]["FIRST_PERIOD"], 
+                        student,
                         sorted_students[student]["GRADE"], 
                         sorted_students[student]["PERIOD_1"], 
                         sessions[sorted_students[student]["PERIOD_1"]]["TEACHER"], 
