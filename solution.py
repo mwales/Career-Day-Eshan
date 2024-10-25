@@ -53,10 +53,12 @@ timestamp_delta = max(list(students_file["TIMESTAMP"])) - min(list(students_file
 min_time = min(list(students_file["TIMESTAMP"]))
 
 for a in range(len(students_file)):
-    first_name = students_file[" FIRST_NAME"][a].strip()
+    # Can't strip a number, but names aren't supposed to be numbers
+    #first_name = students_file[" FIRST_NAME"][a].strip()
+    first_name = students_file[" FIRST_NAME"][a]
     print(f"Parsing {first_name}")
     students[students_file[" ID"][a]] = {
-        "FIRST_NAME": students_file[" FIRST_NAME"][a].strip(),
+        "FIRST_NAME": students_file[" FIRST_NAME"][a],
         "LAST_NAME": students_file[" LAST_NAME"][a].strip(),
         "HOMEROOM": students_file[" HOMEROOM"][a].strip(),
         "FIRST_PERIOD": students_file[" FIRST_PERIOD"][a].strip(),
